@@ -10,18 +10,18 @@ class TempFiller():
     def __init__(self, dir, docx_fileName, excel_fileName, pattern=r"{(.*?)}"):
 
         if not docx_fileName.endswith(".docx"):
-            raise Exception("word文件名必须以.docx结尾 (office word file name must END with .docx)")
+            raise Exception("\033[31mERROR: 文件名必须以.docx结尾 (office word file name must END with .docx)\033[0m")
         if not excel_fileName.endswith(".xlsx"):
-            raise Exception("excel文件名必须以.xlsx结尾 (office excel file name must END with .xlsx)")
+            raise Exception("\033[31mERROR: 文件名必须以.xlsx结尾 (office excel file name must END with .xlsx)\033[0m")
 
         self.input_file = os.path.join(dir, docx_fileName)
         self.output_file = os.path.join(dir, docx_fileName[:-5] + "-tempFiller.docx")
         self.keyword_file = os.path.join(dir, excel_fileName)
 
         if not os.path.exists(self.input_file):
-            raise Exception("word源文件不存在 (word file not found)")
+            raise Exception("\033[31mERROR: word源文件不存在 (word file not found)\033[0m")
         if not os.path.exists(self.keyword_file):
-            raise Exception("excel关键词文件不存在 (excel keyword file not found)")
+            raise Exception("\033[31mERROR: excel关键词文件不存在 (excel keyword file not found)\033[0m")
 
         self.pattern = pattern
 
@@ -31,9 +31,8 @@ class TempFiller():
         except:
             raise Exception("文件打开失败 (File open failed)")
         
-        print(f"导入模板文件：{self.input_file} (load template file)")
-        print(f"导入关键词文件：{self.keyword_file} (load keyword file)")
-        print(f"生成的文件输出到：{self.output_file} (output file to)")
+        print(f"\033[32m导入模板文件(load template file):\033[0m {self.input_file} ")
+        print(f"\033[32m导入关键词文件(load keyword file):\033[0m {self.keyword_file} ")
         print("")
 
         self.keyword_dict = {}
@@ -48,15 +47,6 @@ class TempFiller():
         # find keyword in text, return a list
         match = re.findall(self.pattern, text)
         return match
-
-    def relpace_text_iter(self, matched_keyword_list):
-        # replace keyword in text, return a list
-        for keyword in matched_keyword_list:
-            if keyword in self.keyword_dict:
-                self.keyword_dict[keyword][1] += 1
-                yield [keyword, self.keyword_dict[keyword][0]]
-            else:
-                print(f"警告：关键词{keyword}不存在,跳过 (Warning: keyword {keyword} not found, skip)")
     
     def replace_in_runs(self, runs, matched_keyword_list):
         # have to replace in place, or the style will be lost
@@ -79,7 +69,7 @@ class TempFiller():
                         keyword = self.find_keyword(keyword_record)[0]
                         
                         if keyword not in self.keyword_dict:
-                            print(f"警告：关键词{keyword}不存在,跳过 (Warning: keyword {keyword} not found, skip)")
+                            print(f"\033[31m警告：关键词\"{keyword}\"不存在,跳过 (Warning: keyword \"{keyword}\" not found, skip)\033[0m")
                         else:
                             self.keyword_dict[keyword][1] += 1
                             runs[keyword_begin].text = self.keyword_dict[keyword][0]
@@ -88,31 +78,54 @@ class TempFiller():
             
 
     def replace_keyword(self):
+        # Iterate over all paragraphs...
         for para in self.docx.paragraphs:
             matched_keyword_list = self.find_keyword(para.text)
+            # If any keywords were matched...
             if matched_keyword_list != []:
+                # Replace them in runs...
                 self.replace_in_runs(para.runs, matched_keyword_list)
 
+        # Iterate over all tables...
         for table in self.docx.tables:
             for row in table.rows:
                 for cell in row.cells:
-                    matched_keyword_list = self.replace_text(cell.text)
+                    matched_keyword_list = self.find_keyword(cell.text)
+                    # If any keywords were matched...
                     if matched_keyword_list != []:
-                        for keyword, value in self.relpace_text_iter(matched_keyword_list):
-                            cell.text = cell.text.replace("{" + keyword + "}", value)
+                        # Replace them in runs...
+                        self.replace_in_runs(cell.runs, matched_keyword_list)
 
     def save_docx(self):
         self.docx.save(self.output_file)
+
+    def statistic(self):
+        print("")
+        print("\033[33m关键词使用统计结果 (keyword usage statistic result):\033[0m")
+        for keyword in self.keyword_dict:
+            print(f"{keyword}: {self.keyword_dict[keyword][1]} ", end="")
+            if self.keyword_dict[keyword][1] == 0:
+                print("\033[31m(未使用, not used)\033[0m")
+            else:
+                print("")
 
 def main(temp_filler):
     temp_filler.load_keyword()
     temp_filler.replace_keyword()
     temp_filler.save_docx()
+    temp_filler.statistic()
+    print("")
+    print(f"\033[32m转换完成 (task done)\033[0m")
+    print(f"\033[32m生成的文件输出到(output file to):\033[0m {temp_filler.output_file}")
 
 if __name__ == "__main__":
-    dir = r"E:\Learning\tempFiller"
-    input_file = r"测试文档.docx"
-    keyword_file = r"测试表格.xlsx"
+    # dir = r"E:\Learning\tempFiller"
+    # input_file = r"测试文档.docx"
+    # keyword_file = r"测试表格.xlsx"
+
+    dir = input("请输入文件夹路径 (please input dir path): ")
+    input_file = input("请输入word文件名 (please input word file name): ")
+    keyword_file = input("请输入关键词excel文件名 (please input keyword excel file name): ")
 
     temp_filler = TempFiller(dir=dir, docx_fileName=input_file, excel_fileName=keyword_file)
     main(temp_filler)
