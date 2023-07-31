@@ -58,23 +58,23 @@ class TempFiller():
         for i, run in enumerate(runs):
             if "{" in run.text:
                 keyword_begin = i
-                keyword_record = run.text
+                keyword_record = ""
                 record_flag = True
-            else:
-                if record_flag:
-                    keyword_record += run.text
-                    if "}" in run.text:
-                        record_flag = False
-                        keyword_end = i
-                        keyword = self.find_keyword(keyword_record)[0]
-                        
-                        if keyword not in self.keyword_dict:
-                            print(f"\033[31m警告：关键词\"{keyword}\"不存在,跳过 (Warning: keyword \"{keyword}\" not found, skip)\033[0m")
-                        else:
-                            self.keyword_dict[keyword][1] += 1
-                            runs[keyword_begin].text = self.keyword_dict[keyword][0]
-                            for j in range(keyword_begin + 1, keyword_end + 1):
-                                runs[j].text = ""
+
+            if record_flag:
+                keyword_record += run.text
+                if "}" in run.text:
+                    record_flag = False
+                    keyword_end = i
+                    keyword = self.find_keyword(keyword_record)[0]
+                    
+                    if keyword not in self.keyword_dict:
+                        print(f"\033[31m警告：关键词\"{keyword}\"不存在,跳过 (Warning: keyword \"{keyword}\" not found, skip)\033[0m")
+                    else:
+                        self.keyword_dict[keyword][1] += 1
+                        runs[keyword_begin].text = self.keyword_dict[keyword][0]
+                        for j in range(keyword_begin + 1, keyword_end + 1):
+                            runs[j].text = ""
             
 
     def replace_keyword(self):
@@ -119,13 +119,13 @@ def main(temp_filler):
     print(f"\033[32m生成的文件输出到(output file to):\033[0m {temp_filler.output_file}")
 
 if __name__ == "__main__":
-    # dir = r"E:\Learning\tempFiller"
-    # input_file = r"测试文档.docx"
-    # keyword_file = r"测试表格.xlsx"
+    dir = r"E:\Learning\tempFiller"
+    input_file = r"testFile.docx"
+    keyword_file = r"testKeyword.xlsx"
 
-    dir = input("请输入文件夹路径 (please input dir path): ")
-    input_file = input("请输入word文件名 (please input word file name): ")
-    keyword_file = input("请输入关键词excel文件名 (please input keyword excel file name): ")
+    # dir = input("请输入文件夹路径 (please input dir path): ")
+    # input_file = input("请输入.docx文件名 (please input .docx file name): ")
+    # keyword_file = input("请输入关键词.xlsx文件名 (please input keyword .xlsx file name): ")
 
     temp_filler = TempFiller(dir=dir, docx_fileName=input_file, excel_fileName=keyword_file)
     main(temp_filler)
