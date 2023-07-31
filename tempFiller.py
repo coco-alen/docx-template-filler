@@ -10,18 +10,26 @@ class TempFiller():
     def __init__(self, dir, docx_fileName, excel_fileName, pattern=r"{(.*?)}"):
 
         if not docx_fileName.endswith(".docx"):
-            raise Exception("\033[31mERROR: 文件名必须以.docx结尾 (office word file name must END with .docx)\033[0m")
+            print("ERROR: 文件名必须以.docx结尾 (office word file name must END with .docx)")
+            input("转换失败，请检查文件名，按回车键退出 (The conversion failed, please check the file name and press Enter to exit)")
+            exit()
         if not excel_fileName.endswith(".xlsx"):
-            raise Exception("\033[31mERROR: 文件名必须以.xlsx结尾 (office excel file name must END with .xlsx)\033[0m")
+            print("ERROR: 文件名必须以.xlsx结尾 (office excel file name must END with .xlsx)")
+            input("转换失败，请检查文件名，按回车键退出 (The conversion failed, please check the file name and press Enter to exit)")
+            exit()
 
         self.input_file = os.path.join(dir, docx_fileName)
         self.output_file = os.path.join(dir, docx_fileName[:-5] + "-tempFiller.docx")
         self.keyword_file = os.path.join(dir, excel_fileName)
 
         if not os.path.exists(self.input_file):
-            raise Exception("\033[31mERROR: word源文件不存在 (word file not found)\033[0m")
+            print("ERROR: word源文件不存在 (word file not found)")
+            input("转换失败，请检查文件是否存在，按回车键退出 (The conversion failed, please check whether the file exists, press Enter to exit)")
+            exit()
         if not os.path.exists(self.keyword_file):
-            raise Exception("\033[31mERROR: excel关键词文件不存在 (excel keyword file not found)\033[0m")
+            print("ERROR: excel关键词文件不存在 (excel keyword file not found)")
+            input("转换失败，请检查文件是否存在，按回车键退出 (The conversion failed, please check whether the file exists, press Enter to exit)")
+            exit()
 
         self.pattern = pattern
 
@@ -29,10 +37,12 @@ class TempFiller():
             self.docx = docx.Document(self.input_file)
             self.keyword_sheet = openpyxl.load_workbook(self.keyword_file).active
         except:
-            raise Exception("文件打开失败 (File open failed)")
+            print("文件打开失败 (File open failed)")
+            input("转换失败，请检查文件是否损坏，按回车键退出 (The conversion failed, please check whether the file is corrupted and press Enter to exit)")
+            exit()
         
-        print(f"\033[32m导入模板文件(load template file):\033[0m {self.input_file} ")
-        print(f"\033[32m导入关键词文件(load keyword file):\033[0m {self.keyword_file} ")
+        print(f"导入模板文件(load template file): {self.input_file} ")
+        print(f"导入关键词文件(load keyword file): {self.keyword_file} ")
         print("")
 
         self.keyword_dict = {}
@@ -69,7 +79,7 @@ class TempFiller():
                     keyword = self.find_keyword(keyword_record)[0]
                     
                     if keyword not in self.keyword_dict:
-                        print(f"\033[31m警告：关键词\"{keyword}\"不存在,跳过 (Warning: keyword \"{keyword}\" not found, skip)\033[0m")
+                        print(f"警告：关键词\"{keyword}\"不存在,跳过 (Warning: keyword \"{keyword}\" not found, skip)")
                     else:
                         self.keyword_dict[keyword][1] += 1
                         runs[keyword_begin].text = self.keyword_dict[keyword][0]
@@ -101,11 +111,11 @@ class TempFiller():
 
     def statistic(self):
         print("")
-        print("\033[33m关键词使用统计结果 (keyword usage statistic result):\033[0m")
+        print("关键词使用统计结果 (keyword usage statistic result):")
         for keyword in self.keyword_dict:
             print(f"{keyword}: {self.keyword_dict[keyword][1]} ", end="")
             if self.keyword_dict[keyword][1] == 0:
-                print("\033[31m(未使用, not used)\033[0m")
+                print("(未使用, not used)")
             else:
                 print("")
 
@@ -115,20 +125,22 @@ def main(temp_filler):
     temp_filler.save_docx()
     temp_filler.statistic()
     print("")
-    print(f"\033[32m转换完成 (task done)\033[0m")
-    print(f"\033[32m生成的文件输出到(output file to):\033[0m {temp_filler.output_file}")
+    print(f"转换完成 (task done)")
+    print(f"生成的文件输出到(output file to): {temp_filler.output_file}")
 
 if __name__ == "__main__":
-    dir = r"E:\Learning\tempFiller"
-    input_file = r"testFile.docx"
-    keyword_file = r"testKeyword.xlsx"
+    # dir = r"E:\Learning\tempFiller"
+    # input_file = r"testFile.docx"
+    # keyword_file = r"testKeyword.xlsx"
 
-    # dir = input("请输入文件夹路径 (please input dir path): ")
-    # input_file = input("请输入.docx文件名 (please input .docx file name): ")
-    # keyword_file = input("请输入关键词.xlsx文件名 (please input keyword .xlsx file name): ")
+    dir = input("请输入文件夹路径 (please input dir path): ")
+    input_file = input("请输入word文件名,包含.docx后缀 (Please enter the word file name including '.docx'): ")
+    keyword_file = input("请输入关键词excel文件名,包含.xlsx后缀 (Please enter the keyword excel file name, including '.xlsx'): ")
+    print()
 
     temp_filler = TempFiller(dir=dir, docx_fileName=input_file, excel_fileName=keyword_file)
     main(temp_filler)
-
+    print("\n\n")
+    input("转换结束，按回车键退出 (press enter to exit)")
     # new_doc = replace_text_in_docx(input_file)
     # new_doc.save(output_file)
