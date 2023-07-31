@@ -42,7 +42,7 @@ The program tries to match the {} character and read the key words in it.
 - In the case of curly braces, such as "This is {This is a {keyword} test file} test file", only the text in the innermost {} will be matched as a keyword
 - Braces that do not close will not enter the match
 
-![image-20230801020931261](.\photo\image-20230801020931261.png)
+![image-20230801020931261](./photo/image-20230801020931261.png)
 
 
 
@@ -58,11 +58,11 @@ Warnings & Tips:
 - Do not set exactly the same keywords, otherwise the last setting will prevail, and you can add numbers to distinguish keywords
 - Keywords can be arranged out of order, not necessarily in the order in which they appear in the .docx
 
-![image-20230801021029683](.\photo\image-20230801021029683.png)
+![image-20230801021029683](./photo/image-20230801021029683.png)
 
 ### 4. Result
 
-![image-20230801021126153](.\photo\image-20230801021126153.png)
+![image-20230801021126153](./photo/image-20230801021126153.png)
 
 
 
